@@ -1,0 +1,26 @@
+@model ClubManager.Models.Club
+
+@{
+    ViewData["Title"] = "Xoá CLB";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<h4>Bạn có chắc chắn muốn xoá câu lạc bộ sau?</h4>
+<hr />
+<dl class="row">
+    <dt class="col-sm-2">Tên</dt>
+    <dd class="col-sm-10">@Model.Name</dd>
+
+    <dt class="col-sm-2">Mô tả</dt>
+    <dd class="col-sm-10">@Model.Description</dd>
+
+    <dt class="col-sm-2">Ngày thành lập</dt>
+    <dd class="col-sm-10">@Model.FoundedDate.ToString("dd/MM/yyyy")</dd>
+</dl>
+
+<form asp-action="Delete">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Xoá</button>
+    <a asp-action="Index" class="btn btn-secondary">Huỷ</a>
+</form>

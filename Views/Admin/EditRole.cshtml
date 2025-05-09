@@ -1,0 +1,21 @@
+@model ClubManager.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Phân quyền người dùng";
+    var allRoles = ViewBag.AllRoles as List<string>;
+    var currentRoles = ViewBag.CurrentRoles as IList<string>;
+}
+
+<h2>Phân quyền: @Model.Email</h2>
+
+<form asp-action="EditRole" method="post">
+    <input type="hidden" name="userId" value="@Model.Id" />
+    @foreach (var role in allRoles)
+    {
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="selectedRoles" value="@role"
+                   @(currentRoles.Contains(role) ? "checked" : "") />
+            <label class="form-check-label">@role</label>
+        </div>
+    }
+    <button type="submit" class="btn btn-primary mt-3">Cập nhật vai trò</button>
+</form>

@@ -1,0 +1,31 @@
+@model IEnumerable<ClubManager.Models.Club>
+
+@{
+    ViewData["Title"] = "Chọn Câu Lạc Bộ";
+}
+
+<h2>Danh Sách Câu Lạc Bộ</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tên CLB</th>
+            <th>Mô Tả</th>
+            <th>Thao Tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var club in Model)
+        {
+            <tr>
+                <td>@club.Name</td>
+                <td>@club.Description</td>
+                <td>
+                    <form method="post" asp-action="Join" asp-route-clubId="@club.Id">
+                        <button type="submit" class="btn btn-primary">Gia Nhập</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

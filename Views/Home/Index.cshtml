@@ -1,0 +1,41 @@
+﻿@model List<ClubManager.Models.ViewModels.ClubViewModel>
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<h2>Chào @ViewBag.UserName</h2>
+<h3>Danh sách các câu lạc bộ</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Tên CLB</th>
+            <th>Mô tả</th>
+            <th>Thành lập</th>
+            <th>Trạng thái</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>@item.Club.Name</td>
+            <td>@item.Club.Description</td>
+            <td>@item.Club.FoundedDate.ToString("dd/MM/yyyy")</td>
+            <td>
+                @if (item.HasJoined)
+                {
+                    <span class="text-success">Đã tham gia</span>
+                }
+                else
+                {
+                    <form asp-action="JoinClub" method="post" style="display:inline">
+                        <input type="hidden" name="clubId" value="@item.Club.Id" />
+                        <button type="submit" class="btn btn-primary btn-sm">Xin gia nhập</button>
+                    </form>
+                }
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

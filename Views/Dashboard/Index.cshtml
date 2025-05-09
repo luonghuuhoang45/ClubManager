@@ -1,0 +1,15 @@
+@model ClubManager.Models.ApplicationUser
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2>Welcome, @Model.FullName!</h2>
+<div>
+    <p>Email: @Model.Email</p>
+    <p>Class: @Model.Class</p>
+    <p>Role in Club: @Model.RoleInClub</p>
+    <p>Join Date: @Model.JoinDate.ToString("dd/MM/yyyy")</p>
+</div>
+
+<a href="/Account/Manage">Manage Account</a> <!-- Liên kết đến trang quản lý tài khoản -->
