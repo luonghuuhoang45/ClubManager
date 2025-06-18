@@ -1,35 +1,63 @@
 @model List<ClubManager.Models.ApplicationUser>
+
 @{
-    ViewData["Title"] = "User Management";
+    ViewData["Title"] = "Quản lý người dùng";
 }
 
-<h2>Quản lý người dùng</h2>
-<table class="table table-bordered">
-    <thead>
+<h2 class="mb-4 text-center">Quản lý người dùng</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<table class="table table-bordered table-striped table-hover">
+    <thead class="table-dark">
         <tr>
-            <th>Email</th>
-            <th>Họ tên</th>
-            <th>Vai trò</th>
-            <th>Hành động</th>
+            <th scope="col">Email</th>
+            <th scope="col">Họ tên</th>
+            <th scope="col">Lớp</th>
+            <th scope="col">Ngày tham gia</th>
+            <th scope="col">Trạng thái</th>
+            <th scope="col">Thao tác</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var user in Model)
-{
-    <tr>
-        <td>@user.Email</td>
-        <td>@user.FullName</td>
-        <td>
-            <a asp-action="EditRole" asp-route-userId="@user.Id" class="btn btn-sm btn-warning">Phân quyền</a>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Email</td>
+                <td>@user.FullName</td>
+                <td>@user.Class</td>
+                <td>@user.JoinDate.ToString("dd/MM/yyyy")</td>
+                <td>
+                    @if (user.IsActive)
+                    {
+                        <span class="badge bg-success">Đang hoạt động</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Đã khoá</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="EditRole" asp-route-userId="@user.Id" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-shield-lock"></i> Phân quyền
+                    </a>
 
-            <form asp-action="DeleteUser" method="post" style="display:inline;" 
-                onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này không?');">
-                <input type="hidden" name="userId" value="@user.Id" />
-                <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-            </form>
-        </td>
-
-    </tr>
-}
+                    <form asp-action="DeleteUser" method="post" class="d-inline" 
+                          onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này không?');">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> Xoá
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

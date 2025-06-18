@@ -1,0 +1,10 @@
+@model ClubManager.Models.Student
+
+<h2>Xác nhận xóa</h2>
+<p>Bạn có chắc muốn xóa thành viên <strong>@Model.FullName</strong>?</p>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Xóa</button>
+    <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+</form>

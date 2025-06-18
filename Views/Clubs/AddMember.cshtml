@@ -1,0 +1,32 @@
+@model List<ClubManager.Models.Student>
+@{
+    ViewData["Title"] = "Thêm thành viên";
+    var clubId = ViewBag.ClubId;
+}
+
+<h2>Chọn sinh viên để thêm vào CLB</h2>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Hành động</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in Model)
+        {
+            <tr>
+                <td>@student.FullName</td>
+                <td>@student.Email</td>
+                <td>
+                    <form asp-action="AddMemberConfirmed" method="post">
+                        <input type="hidden" name="clubId" value="@clubId" />
+                        <input type="hidden" name="studentId" value="@student.Id" />
+                        <button type="submit" class="btn btn-primary btn-sm">Thêm</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -245,6 +245,14 @@
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
     },
     {
+      "Id": "D:\\Documents\\Education\\ClubManager\\wwwroot\\uploads\\avatars\\14ffcf20-f437-49a9-9b84-baa804fedd30.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\14ffcf20-f437-49a9-9b84-baa804fedd30.jpg"
+    },
+    {
+      "Id": "D:\\Documents\\Education\\ClubManager\\wwwroot\\uploads\\avatars\\4a087566-5e98-4f96-912b-63f1208786ed.jpg",
+      "PackagePath": "staticwebassets\\uploads\\avatars\\4a087566-5e98-4f96-912b-63f1208786ed.jpg"
+    },
+    {
       "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.ClubManager.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
       "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
     },

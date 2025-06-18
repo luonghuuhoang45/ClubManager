@@ -23,5 +23,7 @@ namespace ClubManager.Models
         // Quan hệ nhiều-nhiều: Student <-> Club thông qua Membership
         public List<Membership> Memberships { get; set; } = new();
         public string UserId { get; internal set; }
+        public bool IsActive { get; set; } = true;
+
     }
 }

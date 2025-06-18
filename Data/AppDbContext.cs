@@ -14,11 +14,27 @@ namespace ClubManager.Data
         public DbSet<Club> Clubs { get; set; }
         public DbSet<Student> Students { get; set; }
         public DbSet<Membership> Memberships { get; set; }
+        public DbSet<EventParticipant> EventParticipants { get; set; } // Thêm DbSet cho EventParticipant
 
         // Cấu hình các mối quan hệ và đặc tính của các bảng
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            // Khóa chính
+            builder.Entity<EventParticipant>()
+                .HasKey(p => p.Id);
+
+            builder.Entity<EventParticipant>()
+                .HasOne(ep => ep.Event)
+                .WithMany(e => e.Participants)
+                .HasForeignKey(ep => ep.EventId);
+
+            builder.Entity<EventParticipant>()
+                .HasOne(ep => ep.Student)
+                .WithMany()
+                .HasForeignKey(ep => ep.StudentId);
+
 
             // Cấu hình khóa chính và quan hệ giữa các bảng
 

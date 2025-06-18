@@ -1,0 +1,60 @@
+@model ClubManager.Models.Club
+
+@{
+    ViewData["Title"] = "Chi tiết CLB";
+    var isAdmin = User.IsInRole("Admin");
+    var isManager = User.IsInRole("ClubManager");
+    var isMember = User.IsInRole("Member");
+}
+
+<h2>@Model.Name</h2>
+<hr />
+<p><strong>Mô tả:</strong> @Model.Description</p>
+<p><strong>Ngày thành lập:</strong> @Model.FoundedDate.ToString("dd/MM/yyyy")</p>
+
+@if (isMember)
+{
+    <form asp-action="Join" asp-route-clubId="@Model.Id" method="post" class="mb-3">
+        <button type="submit" class="btn btn-primary">Yêu cầu tham gia CLB</button>
+    </form>
+}
+
+<h4>Danh sách thành viên:</h4>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Họ và tên</th>
+            <th>Email</th>
+            @if (isAdmin || isManager)
+            {
+                <th>Thao tác</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var member in Model.Memberships.Where(m => m.Status == ClubManager.Models.MembershipStatus.Approved && m.IsActive))
+        {
+            <tr>
+                <td>@member.Student?.FullName</td>
+                <td>@member.Student?.Email</td>
+                @if (isAdmin || isManager)
+                {
+                    <td>
+                        <form asp-action="RemoveMember" asp-route-id="@member.Id" method="post"
+                              onsubmit="return confirm('Bạn chắc chắn muốn loại thành viên này khỏi CLB?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Loại</button>
+                        </form>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (isAdmin || isManager)
+{
+    <a asp-action="MembershipRequests" asp-route-clubId="@Model.Id" class="btn btn-info">Xét duyệt yêu cầu</a>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Chỉnh sửa</a>
+}
+<a asp-action="Index" class="btn btn-secondary">Quay lại</a>

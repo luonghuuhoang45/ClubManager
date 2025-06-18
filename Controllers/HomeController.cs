@@ -21,26 +21,47 @@ namespace ClubManager.Controllers
         public async Task<IActionResult> Index()
         {
             var user = await _userManager.GetUserAsync(User);
+            var viewModel = new HomeIndexViewModel();
 
-            if (user == null)
-                return RedirectToAction("Login", "Account");
+            var allClubs = await _context.Clubs.Where(c => c.IsActive).ToListAsync();
+            var allEvents = await _context.Events.Include(e => e.Club).Where(e => e.IsActive).ToListAsync();
 
-            ViewBag.UserName = user.FullName;
+            var joinedClubIds = new List<int>();
+            var clubVMs = new List<ClubViewModel>();
 
-            var allClubs = await _context.Clubs.ToListAsync();
-
-            var joinedClubIds = await _context.Memberships
-                .Where(m => m.ApplicationUserId == user.Id)
-                .Select(m => m.ClubId)
-                .ToListAsync();
-
-            var model = allClubs.Select(club => new ClubViewModel
+            if (user != null)
             {
-                Club = club,
-                HasJoined = joinedClubIds.Contains(club.Id)
-            }).ToList();
+                var memberships = await _context.Memberships
+                    .Where(m => m.ApplicationUserId == user.Id && m.IsActive)
+                    .ToListAsync();
 
-            return View(model);
+                joinedClubIds = memberships
+                    .Where(m => m.Status == MembershipStatus.Approved)
+                    .Select(m => m.ClubId)
+                    .ToList();
+
+                clubVMs = allClubs.Select(club => new ClubViewModel
+                {
+                    Club = club,
+                    HasJoined = memberships.Any(m => m.ClubId == club.Id && m.Status == MembershipStatus.Approved),
+                    HasRequested = memberships.Any(m => m.ClubId == club.Id && m.Status == MembershipStatus.Pending)
+                }).ToList();
+            }
+            else
+            {
+                clubVMs = allClubs.Select(club => new ClubViewModel
+                {
+                    Club = club,
+                    HasJoined = false,
+                    HasRequested = false
+                }).ToList();
+            }
+
+            viewModel.Clubs = clubVMs;
+            viewModel.Events = allEvents;
+            viewModel.JoinedClubIds = joinedClubIds;
+
+            return View(viewModel);
         }
 
         [HttpPost]
@@ -49,7 +70,7 @@ namespace ClubManager.Controllers
         {
             var userId = _userManager.GetUserId(User); // Lấy UserId của người dùng hiện tại
             var user = await _userManager.FindByIdAsync(userId);
-            
+
             if (user == null)
             {
                 return NotFound();

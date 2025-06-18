@@ -1,0 +1,16 @@
+@model ClubManager.Models.Event
+@{
+    ViewData["Title"] = "Xoá sự kiện";
+}
+
+<h2>Xoá sự kiện</h2>
+
+<div class="alert alert-warning">
+    Bạn có chắc chắn muốn xoá sự kiện "<strong>@Model.Title</strong>"?
+</div>
+
+<form asp-action="DeleteConfirmed" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Xoá</button>
+    <a asp-action="Index" class="btn btn-secondary">Huỷ</a>
+</form>

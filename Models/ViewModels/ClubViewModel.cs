@@ -4,5 +4,6 @@ namespace ClubManager.Models.ViewModels
     {
         public Club Club { get; set; }
         public bool HasJoined { get; set; }
+        public bool HasRequested { get; set; }
     }
 }

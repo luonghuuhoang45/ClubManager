@@ -1,0 +1,116 @@
+@model ClubManager.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Quản lý tài khoản";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    <script>
+        setTimeout(function () {
+            window.location.reload();
+        }, 1200);
+    </script>
+}
+
+@* Hiển thị lỗi upload avatar *@
+@if (ViewData.ModelState["AvatarFile"] != null && ViewData.ModelState["AvatarFile"].Errors.Count > 0)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in ViewData.ModelState["AvatarFile"].Errors)
+        {
+            <div>@error.ErrorMessage</div>
+        }
+    </div>
+}
+
+<form asp-action="Manage" method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label asp-for="FullName" class="form-label"></label>
+        <input asp-for="FullName" class="form-control" />
+        <span asp-validation-for="FullName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Class" class="form-label"></label>
+        <input asp-for="Class" class="form-control" />
+        <span asp-validation-for="Class" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="RoleInClub" class="form-label"></label>
+        <input asp-for="RoleInClub" class="form-control" />
+        <span asp-validation-for="RoleInClub" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label>Ảnh đại diện hiện tại:</label><br />
+        <img id="avatarPreview" src="@(!string.IsNullOrEmpty(Model.AvatarPath) ? Model.AvatarPath : "")" width="100" height="100" style="object-fit:cover; border-radius:50%;@(string.IsNullOrEmpty(Model.AvatarPath) ? "display:none;" : "")" />
+        @if (string.IsNullOrEmpty(Model.AvatarPath))
+        {
+            <p id="noAvatarText"><i>Chưa có ảnh.</i></p>
+        }
+    </div>
+
+    <div class="mb-3">
+        <label>Chọn ảnh mới:</label>
+        <input type="file" name="AvatarFile" class="form-control" accept=".jpg,.jpeg,.png,.gif" onchange="previewAvatar(this)" />
+    </div>
+
+    <div class="mb-3">
+        <a asp-action="ChangePassword" class="btn btn-warning">Đổi mật khẩu</a>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+</form>
+
+<hr />
+<h4>Thông tin bổ sung</h4>
+
+<p><strong>Vai trò của bạn:</strong></p>
+<ul>
+    @foreach (var role in (IEnumerable<string>)ViewBag.Roles)
+    {
+        <li>@role</li>
+    }
+</ul>
+
+<p><strong>CLB bạn đang tham gia:</strong></p>
+@if (ViewBag.UserClubs != null && ((List<ClubManager.Models.Club>)ViewBag.UserClubs).Any())
+{
+    <ul>
+        @foreach (var club in (List<ClubManager.Models.Club>)ViewBag.UserClubs)
+        {
+            <li>@club.Name</li>
+        }
+    </ul>
+}
+else
+{
+    <p>Bạn chưa tham gia CLB nào.</p>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function previewAvatar(input) {
+            var preview = document.getElementById('avatarPreview');
+            var noAvatarText = document.getElementById('noAvatarText');
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'inline-block';
+                    if (noAvatarText) noAvatarText.style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                preview.src = "";
+                preview.style.display = 'none';
+                if (noAvatarText) noAvatarText.style.display = 'block';
+            }
+        }
+    </script>
+}

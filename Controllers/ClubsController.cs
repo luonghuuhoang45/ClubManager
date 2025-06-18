@@ -7,33 +7,55 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClubManager.Controllers
 {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,ClubManager")]
     public class ClubsController : Controller
     {
         private readonly AppDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+
         public ClubsController(AppDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
-        
 
         // GET: Clubs
         public async Task<IActionResult> Index()
         {
-            // Lấy danh sách câu lạc bộ
-            var clubs = await _context.Clubs.ToListAsync();
-            return View(clubs);
+            var user = await _userManager.GetUserAsync(User);
+
+            if (User.IsInRole("Admin"))
+            {
+                var clubs = await _context.Clubs.ToListAsync();
+                return View(clubs);
+            }
+
+            if (User.IsInRole("ClubManager"))
+            {
+                var clubIds = await _context.Memberships
+                    .Where(m => m.ApplicationUserId == user.Id)
+                    .Select(m => m.ClubId)
+                    .ToListAsync();
+
+                var clubs = await _context.Clubs
+                    .Where(c => clubIds.Contains(c.Id))
+                    .ToListAsync();
+
+                return View(clubs);
+            }
+
+            return Forbid();
         }
 
         // GET: Clubs/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Clubs/Create
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Description,FoundedDate")] Club club)
@@ -42,22 +64,17 @@ namespace ClubManager.Controllers
             {
                 try
                 {
-                    // Đảm bảo rằng không có thành viên trong câu lạc bộ khi tạo
                     club.Memberships = new List<Membership>();
-
-                    // Thêm câu lạc bộ vào cơ sở dữ liệu
                     _context.Add(club);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index)); // Chuyển hướng về danh sách câu lạc bộ
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (Exception ex)
                 {
-                    // Log lỗi nếu có vấn đề khi lưu
-                    Console.WriteLine($"Lỗi khi lưu club: {ex.Message}");
-                    ModelState.AddModelError("", "Đã xảy ra lỗi khi lưu câu lạc bộ.");
+                    Console.WriteLine($"Lỗi khi tạo câu lạc bộ: {ex.Message}");
+                    ModelState.AddModelError("", "Đã xảy ra lỗi khi tạo câu lạc bộ.");
                 }
             }
-
             return View(club);
         }
 
@@ -69,7 +86,21 @@ namespace ClubManager.Controllers
             var club = await _context.Clubs.FindAsync(id);
             if (club == null) return NotFound();
 
-            return View(club);
+            var user = await _userManager.GetUserAsync(User);
+
+            if (User.IsInRole("Admin"))
+                return View(club);
+
+            if (User.IsInRole("ClubManager"))
+            {
+                var isManager = await _context.Memberships
+                    .AnyAsync(m => m.ClubId == club.Id && m.ApplicationUserId == user.Id);
+
+                if (isManager)
+                    return View(club);
+            }
+
+            return Forbid();
         }
 
         // POST: Clubs/Edit/5
@@ -83,35 +114,35 @@ namespace ClubManager.Controllers
             {
                 try
                 {
-                    // Cập nhật thông tin câu lạc bộ
                     _context.Update(club);
                     await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!_context.Clubs.Any(e => e.Id == club.Id))
+                    if (!_context.Clubs.Any(c => c.Id == club.Id))
                         return NotFound();
-                    else
-                        throw;
+                    throw;
                 }
-                return RedirectToAction(nameof(Index));
             }
+
             return View(club);
         }
 
         // GET: Clubs/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
 
-            var club = await _context.Clubs
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var club = await _context.Clubs.FirstOrDefaultAsync(c => c.Id == id);
             if (club == null) return NotFound();
 
             return View(club);
         }
 
         // POST: Clubs/Delete/5
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -119,7 +150,6 @@ namespace ClubManager.Controllers
             var club = await _context.Clubs.FindAsync(id);
             if (club != null)
             {
-                // Xóa câu lạc bộ khỏi cơ sở dữ liệu
                 _context.Clubs.Remove(club);
                 await _context.SaveChangesAsync();
             }
@@ -132,37 +162,113 @@ namespace ClubManager.Controllers
             if (id == null) return NotFound();
 
             var club = await _context.Clubs
-                .Include(c => c.Memberships) // Bao gồm thông tin thành viên
-                .ThenInclude(m => m.Student) // Bao gồm thông tin người dùng (Student)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (club == null) return NotFound();
+                .Include(c => c.Memberships)
+                    .ThenInclude(m => m.Student)
+                .FirstOrDefaultAsync(c => c.Id == id);
 
-            return View(club);
-        }
-
-        // GET: Clubs/Join/5 - Gia nhập câu lạc bộ
-        public async Task<IActionResult> Join(int? clubId)
-        {
-            if (clubId == null) return NotFound();
-
-            var club = await _context.Clubs.FindAsync(clubId);
             if (club == null) return NotFound();
 
             var user = await _userManager.GetUserAsync(User);
-            if (user == null) return RedirectToAction("Login", "Account");
 
-            // Thêm thành viên vào câu lạc bộ
+            // Nếu là Admin hoặc ClubManager → cho vào
+            if (User.IsInRole("Admin") || User.IsInRole("ClubManager"))
+                return View(club);
+
+            // Nếu là Member và thuộc CLB đó → cho xem
+            var isMember = await _context.Memberships
+                .AnyAsync(m => m.ClubId == club.Id && m.ApplicationUserId == user.Id);
+
+            if (isMember)
+                return View(club);
+
+            return Forbid(); // Người không liên quan không được xem
+        }
+
+        // GET: Clubs/Join/5
+        [Authorize(Roles = "Member")]
+        public async Task<IActionResult> Join(int clubId)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
+            if (student == null) return NotFound("Không tìm thấy sinh viên");
+
+            // Đã gửi trước đó?
+            var exists = await _context.Memberships
+                .AnyAsync(m => m.StudentId == student.Id && m.ClubId == clubId && m.IsActive);
+
+            if (exists)
+            {
+                TempData["Info"] = "Bạn đã gửi yêu cầu hoặc là thành viên rồi.";
+                return RedirectToAction("Details", new { id = clubId });
+            }
+
             var membership = new Membership
             {
-                ClubId = club.Id,
-                StudentId = int.Parse(user.Id),
-                JoinDate = DateTime.Now
+                ClubId = clubId,
+                StudentId = student.Id,
+                ApplicationUserId = user.Id,
+                JoinDate = DateTime.Now,
+                Status = MembershipStatus.Pending,
+                IsActive = true
             };
 
             _context.Memberships.Add(membership);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(Index), "Home"); // Sau khi gia nhập, chuyển về trang chủ
+            TempData["Success"] = "Yêu cầu tham gia đã được gửi!";
+            return RedirectToAction("Details", new { id = clubId });
+        }
+
+        [Authorize(Roles = "Admin,ClubManager")]
+        public async Task<IActionResult> MembershipRequests(int clubId)
+        {
+            var requests = await _context.Memberships
+                .Include(m => m.Student)
+                .Where(m => m.ClubId == clubId && m.Status == MembershipStatus.Pending && m.IsActive)
+                .ToListAsync();
+
+            ViewBag.ClubId = clubId;
+            return View(requests);
+        }
+
+        [Authorize(Roles = "Admin,ClubManager")]
+        public async Task<IActionResult> ApproveRequest(int id)
+        {
+            var request = await _context.Memberships.FindAsync(id);
+            if (request == null) return NotFound();
+
+            request.Status = MembershipStatus.Approved;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("MembershipRequests", new { clubId = request.ClubId });
+        }
+
+        [Authorize(Roles = "Admin,ClubManager")]
+        public async Task<IActionResult> RejectRequest(int id)
+        {
+            var request = await _context.Memberships.FindAsync(id);
+            if (request == null) return NotFound();
+
+            request.Status = MembershipStatus.Rejected;
+            request.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("MembershipRequests", new { clubId = request.ClubId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,ClubManager")]
+        public async Task<IActionResult> RemoveMember(int id)
+        {
+            var membership = await _context.Memberships.FindAsync(id);
+            if (membership == null) return NotFound();
+
+            // Đánh dấu không hoạt động thay vì xoá
+            membership.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Details", new { id = membership.ClubId });
         }
     }
 }

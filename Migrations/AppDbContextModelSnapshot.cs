@@ -30,6 +30,9 @@ namespace ClubManager.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("AvatarPath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Class")
                         .HasColumnType("nvarchar(max)");
 

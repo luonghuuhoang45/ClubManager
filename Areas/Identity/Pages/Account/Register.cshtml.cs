@@ -118,6 +118,9 @@ namespace ClubManager.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User created a new account with password.");
 
+                    // Thêm user vào role "Member"
+                    await _userManager.AddToRoleAsync(user, "Member");
+
                     // TẠO HỒ SƠ STUDENT TƯƠNG ỨNG, DÙNG ĐỂ TEST NÊN TẠO MẶC ĐỊNH
                     var student = new Student
                     {

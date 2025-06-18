@@ -255,3 +255,4 @@ D:\Documents\Education\ClubManager\obj\Debug\net8.0\refint\ClubManager.dll
 D:\Documents\Education\ClubManager\obj\Debug\net8.0\ClubManager.pdb
 D:\Documents\Education\ClubManager\obj\Debug\net8.0\ClubManager.genruntimeconfig.cache
 D:\Documents\Education\ClubManager\obj\Debug\net8.0\ref\ClubManager.dll
+D:\Documents\Education\ClubManager\obj\Debug\net8.0\ClubManager.sourcelink.json

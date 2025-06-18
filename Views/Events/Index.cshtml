@@ -1,0 +1,46 @@
+@model List<ClubManager.Models.Event>
+@{
+    ViewData["Title"] = "Sự kiện";
+}
+
+<h2>Sự kiện</h2>
+
+@if (User.IsInRole("Admin") || User.IsInRole("ClubManager"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-success">+ Tạo sự kiện mới</a>
+    </p>
+}
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tiêu đề</th>
+            <th>CLB</th>
+            <th>Bắt đầu</th>
+            <th>Kết thúc</th>
+            <th>Địa điểm</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.Club?.Name</td>
+                <td>@item.StartTime.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@item.EndTime.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@item.Location</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info btn-sm">Chi tiết</a>
+                    @if (User.IsInRole("Admin") || User.IsInRole("ClubManager"))
+                    {
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Xoá</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

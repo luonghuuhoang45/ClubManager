@@ -1,0 +1,30 @@
+@model List<ClubManager.Models.Membership>
+@{
+    ViewData["Title"] = "Yêu cầu tham gia CLB";
+    var clubId = ViewBag.ClubId;
+}
+
+<h2>Yêu cầu tham gia CLB</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Thao tác</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.Student?.FullName</td>
+                <td>@r.Student?.Email</td>
+                <td>
+                    <a asp-action="ApproveRequest" asp-route-id="@r.Id" class="btn btn-success btn-sm">Duyệt</a>
+                    <a asp-action="RejectRequest" asp-route-id="@r.Id" class="btn btn-danger btn-sm">Từ chối</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

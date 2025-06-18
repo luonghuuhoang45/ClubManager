@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace ClubManager.Models
@@ -18,6 +19,12 @@ namespace ClubManager.Models
 
         [Display(Name = "Ngày tham gia")]
         public DateTime JoinDate { get; set; } = DateTime.Now;
-        public ICollection<Membership> Memberships { get; set; }
+
+        [Display(Name = "Ảnh đại diện")]
+        public string? AvatarPath { get; set; }
+
+        public ICollection<Membership>? Memberships { get; set; }
+        public bool IsActive { get; set; } = true;
+
     }
 }

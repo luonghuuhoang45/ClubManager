@@ -1,14 +1,17 @@
 @model IEnumerable<ClubManager.Models.Club>
 
 @{
-    ViewData["Title"] = "Danh sách Câu lạc bộ";
+    ViewData["Title"] = User.IsInRole("Admin") ? "Quản lý Câu lạc bộ" : "CLB của tôi";
 }
 
 <h2>@ViewData["Title"]</h2>
 
-<p>
-    <a asp-action="Create" class="btn btn-success">+ Tạo CLB mới</a>
-</p>
+@if (User.IsInRole("Admin"))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-success">+ Tạo CLB mới</a>
+    </p>
+}
 
 <table class="table table-bordered">
     <thead>

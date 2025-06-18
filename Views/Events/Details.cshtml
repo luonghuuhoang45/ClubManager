@@ -1,0 +1,63 @@
+@model ClubManager.Models.Event
+@{
+    ViewData["Title"] = "Chi tiết sự kiện";
+    var isAdmin = User.IsInRole("Admin");
+    var isManager = User.IsInRole("ClubManager");
+    var isMember = User.IsInRole("Member");
+}
+
+<h2>@Model.Title</h2>
+
+<hr />
+<p><strong>CLB:</strong> @(Model.Club != null ? Model.Club.Name : "Không xác định")</p>
+<p><strong>Mô tả:</strong> @Model.Description</p>
+<p><strong>Bắt đầu:</strong> @Model.StartTime.ToString("dd/MM/yyyy HH:mm")</p>
+<p><strong>Kết thúc:</strong> @Model.EndTime.ToString("dd/MM/yyyy HH:mm")</p>
+<p><strong>Địa điểm:</strong> @Model.Location</p>
+
+<!-- Danh sách người tham gia -->
+<h4>Danh sách người tham gia</h4>
+@{
+    var participants = Model.Participants ?? new List<ClubManager.Models.EventParticipant>();
+}
+@if (participants.Any())
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Họ và tên</th>
+                <th>Email</th>
+                <th>Ngày tham gia</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model.Participants.Where(p => p.IsActive))
+            {
+                <tr>
+                    <td>@p.Student?.FullName</td>
+                    <td>@p.Student?.Email</td>
+                    <td>@p.JoinDate.ToString("dd/MM/yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Chưa có người tham gia.</p>
+}
+@if (isAdmin || isManager)
+{
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Sửa</a>
+    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Xoá</a>
+}
+@if (User.Identity?.IsAuthenticated == true && isMember && Model.Club != null)
+{
+    <form asp-action="Join" method="post" class="mt-3">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="eventId" value="@Model.Id" />
+        <button type="submit" class="btn btn-primary">Tham gia sự kiện</button>
+    </form>
+}
+<a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>
+
