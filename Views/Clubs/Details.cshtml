@@ -5,6 +5,17 @@
     var isAdmin = User.IsInRole("Admin");
     var isManager = User.IsInRole("ClubManager");
     var isMember = User.IsInRole("Member");
+
+    // Kiểm tra user đã là thành viên hợp lệ chưa
+    bool isValidMember = false;
+    string userId = User.FindFirst("sub")?.Value ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+    if (isMember && userId != null && Model.Memberships != null)
+    {
+        isValidMember = Model.Memberships.Any(m =>
+            m.ApplicationUserId == userId &&
+            m.Status == ClubManager.Models.MembershipStatus.Approved &&
+            m.IsActive);
+    }
 }
 
 <h2>@Model.Name</h2>
@@ -12,7 +23,7 @@
 <p><strong>Mô tả:</strong> @Model.Description</p>
 <p><strong>Ngày thành lập:</strong> @Model.FoundedDate.ToString("dd/MM/yyyy")</p>
 
-@if (isMember)
+@if (isMember && !isValidMember)
 {
     <form asp-action="Join" asp-route-clubId="@Model.Id" method="post" class="mb-3">
         <button type="submit" class="btn btn-primary">Yêu cầu tham gia CLB</button>
@@ -20,7 +31,6 @@
 }
 
 <h4>Danh sách thành viên:</h4>
-
 <table class="table table-bordered">
     <thead>
         <tr>
@@ -28,6 +38,7 @@
             <th>Email</th>
             @if (isAdmin || isManager)
             {
+                <th>Trạng thái</th>
                 <th>Thao tác</th>
             }
         </tr>
@@ -35,14 +46,29 @@
     <tbody>
         @foreach (var member in Model.Memberships)
         {
-            var isCurrentManager = User.IsInRole("ClubManager") && member.ApplicationUserId == User.FindFirst("sub")?.Value;
-            if (member.Status == ClubManager.Models.MembershipStatus.Approved && member.IsActive)
+            // Chỉ hiển thị member hợp lệ cho member thường
+            bool showForMember = member.Status == ClubManager.Models.MembershipStatus.Approved && member.IsActive;
+            if ((isAdmin || isManager) || (isMember && showForMember))
             {
                 <tr>
                     <td>@member.Student?.FullName</td>
                     <td>@member.Student?.Email</td>
-                    @if (isAdmin || isCurrentManager)
+                    @if (isAdmin || isManager)
                     {
+                        <td>
+                            @if (member.Status == MembershipStatus.Approved && member.IsActive)
+                            {
+                                <span class="badge bg-success">Đã duyệt</span>
+                            }
+                            else if (member.Status == MembershipStatus.Pending)
+                            {
+                                <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                            }
+                            else if (member.Status == MembershipStatus.Rejected)
+                            {
+                                <span class="badge bg-danger">Từ chối</span>
+                            }
+                        </td>
                         <td>
                             <form asp-action="RemoveMember" method="post" class="d-inline"
                                   onsubmit="return confirm('Bạn chắc chắn muốn loại thành viên này khỏi CLB?');">

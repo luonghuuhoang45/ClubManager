@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClubManager.Controllers
 {
-    [Authorize(Roles = "Admin,ClubManager")]
+    [Authorize] // Cho phép tất cả role truy cập controller này
     public class ClubsController : Controller
     {
         private readonly AppDbContext _context;
@@ -34,6 +34,21 @@ namespace ClubManager.Controllers
             {
                 var clubIds = await _context.Memberships
                     .Where(m => m.ApplicationUserId == user.Id)
+                    .Select(m => m.ClubId)
+                    .ToListAsync();
+
+                var clubs = await _context.Clubs
+                    .Where(c => clubIds.Contains(c.Id))
+                    .ToListAsync();
+
+                return View(clubs);
+            }
+
+            // Cho phép Member xem các CLB đã tham gia (active)
+            if (User.IsInRole("Member"))
+            {
+                var clubIds = await _context.Memberships
+                    .Where(m => m.ApplicationUserId == user.Id && m.Status == MembershipStatus.Approved && m.IsActive)
                     .Select(m => m.ClubId)
                     .ToListAsync();
 
@@ -79,6 +94,7 @@ namespace ClubManager.Controllers
         }
 
         // GET: Clubs/Edit/5
+        [Authorize(Roles = "Admin,ClubManager")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -104,6 +120,7 @@ namespace ClubManager.Controllers
         }
 
         // POST: Clubs/Edit/5
+        [Authorize(Roles = "Admin,ClubManager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,FoundedDate")] Club club)
@@ -174,11 +191,11 @@ namespace ClubManager.Controllers
             if (User.IsInRole("Admin") || User.IsInRole("ClubManager"))
                 return View(club);
 
-            // Nếu là Member và thuộc CLB đó → cho xem
-            var isMember = await _context.Memberships
-                .AnyAsync(m => m.ClubId == club.Id && m.ApplicationUserId == user.Id);
+            // Nếu là Member và là thành viên active của CLB đó → cho xem
+            var isActiveMember = await _context.Memberships
+                .AnyAsync(m => m.ClubId == club.Id && m.ApplicationUserId == user.Id && m.Status == MembershipStatus.Approved && m.IsActive);
 
-            if (isMember)
+            if (User.IsInRole("Member") && isActiveMember)
                 return View(club);
 
             return Forbid(); // Người không liên quan không được xem

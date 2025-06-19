@@ -16,14 +16,14 @@
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <div class="form-group mb-4">
-                        <label asp-for="Input.Email" class="fw-semibold"></label>
+                        <label asp-for="Input.Email" class="fw-semibold">Email</label>
                         <input asp-for="Input.Email" class="form-control form-control-lg rounded-3"
                             placeholder="Email của bạn" />
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-4">
-                        <label asp-for="Input.Password" class="fw-semibold"></label>
+                        <label asp-for="Input.Password" class="fw-semibold">Mật khẩu</label>
                         <input asp-for="Input.Password" class="form-control form-control-lg rounded-3"
                             placeholder="Mật khẩu" />
                         <span asp-validation-for="Input.Password" class="text-danger"></span>
@@ -31,7 +31,7 @@
 
                     <div class="form-check mb-4">
                         <input asp-for="Input.RememberMe" class="form-check-input" />
-                        <label asp-for="Input.RememberMe" class="form-check-label"></label>
+                        <label asp-for="Input.RememberMe" class="form-check-label">Lưu tài khoản</label>
                     </div>
 
                     <button type="submit"  class="btn btn-primary w-100 py-2 rounded-3 fw-bold shadow-sm"

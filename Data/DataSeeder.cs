@@ -225,7 +225,7 @@ namespace ClubManager.Data
                         StartTime = DateTime.Now.AddDays(7),
                         EndTime = DateTime.Now.AddDays(8),
                         Location = "Sân vận động A",
-                        ClubId = clubList[0].Id,
+                        ClubId = clubList[0].Id + 1,
                         IsActive = true
                     });
                 }
@@ -238,7 +238,7 @@ namespace ClubManager.Data
                         StartTime = DateTime.Now.AddDays(10),
                         EndTime = DateTime.Now.AddDays(10).AddHours(4),
                         Location = "Thư viện trung tâm",
-                        ClubId = clubList[1].Id,
+                        ClubId = clubList[1].Id + 1,
                         IsActive = true
                     });
                 }
@@ -251,7 +251,7 @@ namespace ClubManager.Data
                         StartTime = DateTime.Now.AddDays(14),
                         EndTime = DateTime.Now.AddDays(14).AddHours(3),
                         Location = "Phòng Lab 2",
-                        ClubId = clubList[2].Id,
+                        ClubId = clubList[2].Id + 1,
                         IsActive = true
                     });
                 }
@@ -264,7 +264,7 @@ namespace ClubManager.Data
                         StartTime = DateTime.Now.AddDays(15),
                         EndTime = DateTime.Now.AddDays(15).AddHours(2),
                         Location = "Sân vận động A",
-                        ClubId = clubList[0].Id,
+                        ClubId = clubList[0].Id + 1,
                         IsActive = true
                     });
                 }
@@ -277,7 +277,7 @@ namespace ClubManager.Data
                         StartTime = DateTime.Now.AddDays(20),
                         EndTime = DateTime.Now.AddDays(20).AddHours(2),
                         Location = "Hội trường lớn",
-                        ClubId = clubList[2].Id,
+                        ClubId = clubList[2].Id + 1,
                         IsActive = true
                     });
                 }

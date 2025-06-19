@@ -16,25 +16,25 @@
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
                     
                     <div class="form-group mb-4">
-                        <label asp-for="Input.FullName" class="fw-semibold"></label>
+                        <label asp-for="Input.FullName" class="fw-semibold">Họ tên</label>
                         <input asp-for="Input.FullName" class="form-control form-control-lg rounded-3" autocomplete="name" aria-required="true" placeholder="Họ và tên" />
                         <span asp-validation-for="Input.FullName" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-4">
-                        <label asp-for="Input.Email" class="fw-semibold"></label>
+                        <label asp-for="Input.Email" class="fw-semibold">Email</label>
                         <input asp-for="Input.Email" class="form-control form-control-lg rounded-3" autocomplete="username" aria-required="true" placeholder="Email của bạn" />
                         <span asp-validation-for="Input.Email" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-4">
-                        <label asp-for="Input.Password" class="fw-semibold"></label>
+                        <label asp-for="Input.Password" class="fw-semibold">Mật khẩu</label>
                         <input asp-for="Input.Password" class="form-control form-control-lg rounded-3" autocomplete="new-password" aria-required="true" placeholder="Mật khẩu" />
                         <span asp-validation-for="Input.Password" class="text-danger"></span>
                     </div>
 
                     <div class="form-group mb-4">
-                        <label asp-for="Input.ConfirmPassword" class="fw-semibold"></label>
+                        <label asp-for="Input.ConfirmPassword" class="fw-semibold">Nhập lại mật khẩu</label>
                         <input asp-for="Input.ConfirmPassword" class="form-control form-control-lg rounded-3" autocomplete="new-password" aria-required="true" placeholder="Nhập lại mật khẩu" />
                         <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
                     </div>

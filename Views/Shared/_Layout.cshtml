@@ -10,6 +10,28 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 </head>
 <body>
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    else if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    else if (TempData["Info"] != null)
+    {
+        <div class="alert alert-info alert-dismissible fade show" role="alert">
+            @TempData["Info"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
             <div class="container-fluid">
@@ -48,6 +70,10 @@
                                     }
                                     else if (User.IsInRole("ClubManager"))
                                     {
+                                        <li><a class="dropdown-item" asp-controller="Clubs" asp-action="Index">Quản lý CLB của tôi</a></li>
+                                    }
+                                    else if (User.IsInRole("Member"))
+                                    {
                                         <li><a class="dropdown-item" asp-controller="Clubs" asp-action="Index">CLB của tôi</a></li>
                                     }
                                     <li><hr class="dropdown-divider" /></li>
@@ -75,15 +101,6 @@
     </header>
 
     <div class="container mt-4">
-        @if (TempData["SuccessMessage"] != null)
-        {
-            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
-        }
-        @if (TempData["ErrorMessage"] != null)
-        {
-            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
-        }
-
         <main role="main" class="pb-3">
             @RenderBody()
         </main>

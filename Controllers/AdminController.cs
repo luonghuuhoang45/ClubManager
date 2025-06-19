@@ -22,6 +22,26 @@ namespace ClubManager.Controllers
         public async Task<IActionResult> Users()
         {
             var users = await _userManager.Users.ToListAsync();
+
+            // Lấy roles cho từng user
+            var userRoles = new Dictionary<string, string>();
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                // Ưu tiên: Admin > ClubManager > Member
+                if (roles.Contains("Admin")) userRoles[user.Id] = "Admin";
+                else if (roles.Contains("ClubManager")) userRoles[user.Id] = "ClubManager";
+                else if (roles.Contains("Member")) userRoles[user.Id] = "Member";
+                else userRoles[user.Id] = "";
+            }
+
+            // Sắp xếp: Role > Email (bỏ CreatedAt vì không có)
+            users = users
+                .OrderBy(u => userRoles[u.Id] == "Admin" ? 0 : userRoles[u.Id] == "ClubManager" ? 1 : userRoles[u.Id] == "Member" ? 2 : 3)
+                .ThenBy(u => u.Email)
+                .ToList();
+
+            ViewBag.UserRoles = userRoles;
             return View(users);
         }
 
@@ -92,3 +112,4 @@ namespace ClubManager.Controllers
         }
     }
 }
+

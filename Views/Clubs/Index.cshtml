@@ -2,11 +2,14 @@
 
 @{
     ViewData["Title"] = User.IsInRole("Admin") ? "Quản lý Câu lạc bộ" : "CLB của tôi";
+    var isAdmin = User.IsInRole("Admin");
+    var isManager = User.IsInRole("ClubManager");
+    var isMember = User.IsInRole("Member");
 }
 
 <h2>@ViewData["Title"]</h2>
 
-@if (User.IsInRole("Admin"))
+@if (isAdmin)
 {
     <p>
         <a asp-action="Create" class="btn btn-success">+ Tạo CLB mới</a>
@@ -31,8 +34,11 @@
                 <td>@club.Description</td>
                 <td>
                     <a asp-action="Details" asp-route-id="@club.Id" class="btn btn-info btn-sm">Chi tiết</a>
-                    <a asp-action="Edit" asp-route-id="@club.Id" class="btn btn-warning btn-sm">Sửa</a>
-                    <a asp-action="Delete" asp-route-id="@club.Id" class="btn btn-danger btn-sm">Xoá</a>
+                    @if (isAdmin || isManager)
+                    {
+                        <a asp-action="Edit" asp-route-id="@club.Id" class="btn btn-warning btn-sm">Sửa</a>
+                        <a asp-action="Delete" asp-route-id="@club.Id" class="btn btn-danger btn-sm">Xoá</a>
+                    }
                 </td>
             </tr>
         }
