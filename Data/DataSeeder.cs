@@ -153,6 +153,136 @@ namespace ClubManager.Data
                 await userManager.CreateAsync(member, "Member123!");
                 await userManager.AddToRoleAsync(member, "Member");
             }
+
+            // ===== Thêm 3 user demo =====
+            var demoUsers = new[]
+            {
+                new { FullName = "Nguyễn Văn A", Email = "member1@club.com", UserName = "member1@club.com" },
+                new { FullName = "Lê Thị B", Email = "member2@club.com", UserName = "member2@club.com" },
+                new { FullName = "Lý Quang C", Email = "member3@club.com", UserName = "member3@club.com" }
+            };
+
+            foreach (var u in demoUsers)
+            {
+                if (await userManager.FindByEmailAsync(u.Email) == null)
+                {
+                    var user = new ApplicationUser
+                    {
+                        UserName = u.UserName,
+                        Email = u.Email,
+                        FullName = u.FullName,
+                        EmailConfirmed = true,
+                        IsActive = true
+                    };
+                    await userManager.CreateAsync(user, "Pass123!");
+                    await userManager.AddToRoleAsync(user, "Member");
+                }
+            }
+
+            // ===== Thêm 3 CLB demo =====
+            if (!context.Clubs.Any(c => c.Name == "CLB Bóng Đá Sao Vàng"))
+            {
+                context.Clubs.Add(new Club
+                {
+                    Name = "CLB Bóng Đá Sao Vàng",
+                    Description = "Nơi giao lưu, rèn luyện và thi đấu bóng đá.",
+                    FoundedDate = new DateTime(2018, 5, 10),
+                    IsActive = true
+                });
+            }
+            if (!context.Clubs.Any(c => c.Name == "CLB Sách & Tri Thức"))
+            {
+                context.Clubs.Add(new Club
+                {
+                    Name = "CLB Sách & Tri Thức",
+                    Description = "Cộng đồng yêu sách, chia sẻ kiến thức và kỹ năng đọc.",
+                    FoundedDate = new DateTime(2020, 9, 1),
+                    IsActive = true
+                });
+            }
+            if (!context.Clubs.Any(c => c.Name == "CLB Công Nghệ Trẻ"))
+            {
+                context.Clubs.Add(new Club
+                {
+                    Name = "CLB Công Nghệ Trẻ",
+                    Description = "Nơi học hỏi, sáng tạo và phát triển các dự án công nghệ.",
+                    FoundedDate = new DateTime(2019, 3, 15),
+                    IsActive = true
+                });
+            }
+            await context.SaveChangesAsync();
+
+            // ===== Thêm 5 sự kiện demo =====
+            var clubList = context.Clubs.Take(3).ToList();
+            if (clubList.Count == 3)
+            {
+                if (!context.Events.Any(e => e.Title == "Giải Bóng Đá Sinh Viên 2025"))
+                {
+                    context.Events.Add(new Event
+                    {
+                        Title = "Giải Bóng Đá Sinh Viên 2025",
+                        Description = "Giải đấu bóng đá dành cho sinh viên toàn trường.",
+                        StartTime = DateTime.Now.AddDays(7),
+                        EndTime = DateTime.Now.AddDays(8),
+                        Location = "Sân vận động A",
+                        ClubId = clubList[0].Id,
+                        IsActive = true
+                    });
+                }
+                if (!context.Events.Any(e => e.Title == "Ngày Hội Đọc Sách"))
+                {
+                    context.Events.Add(new Event
+                    {
+                        Title = "Ngày Hội Đọc Sách",
+                        Description = "Chia sẻ sách hay, giao lưu tác giả, tặng sách miễn phí.",
+                        StartTime = DateTime.Now.AddDays(10),
+                        EndTime = DateTime.Now.AddDays(10).AddHours(4),
+                        Location = "Thư viện trung tâm",
+                        ClubId = clubList[1].Id,
+                        IsActive = true
+                    });
+                }
+                if (!context.Events.Any(e => e.Title == "Workshop Lập Trình Web"))
+                {
+                    context.Events.Add(new Event
+                    {
+                        Title = "Workshop Lập Trình Web",
+                        Description = "Học lập trình web cơ bản cho sinh viên CNTT.",
+                        StartTime = DateTime.Now.AddDays(14),
+                        EndTime = DateTime.Now.AddDays(14).AddHours(3),
+                        Location = "Phòng Lab 2",
+                        ClubId = clubList[2].Id,
+                        IsActive = true
+                    });
+                }
+                if (!context.Events.Any(e => e.Title == "Chung Kết Bóng Đá"))
+                {
+                    context.Events.Add(new Event
+                    {
+                        Title = "Chung Kết Bóng Đá",
+                        Description = "Trận chung kết giải bóng đá sinh viên.",
+                        StartTime = DateTime.Now.AddDays(15),
+                        EndTime = DateTime.Now.AddDays(15).AddHours(2),
+                        Location = "Sân vận động A",
+                        ClubId = clubList[0].Id,
+                        IsActive = true
+                    });
+                }
+                if (!context.Events.Any(e => e.Title == "Talkshow Công Nghệ 2025"))
+                {
+                    context.Events.Add(new Event
+                    {
+                        Title = "Talkshow Công Nghệ 2025",
+                        Description = "Giao lưu với các chuyên gia công nghệ trẻ.",
+                        StartTime = DateTime.Now.AddDays(20),
+                        EndTime = DateTime.Now.AddDays(20).AddHours(2),
+                        Location = "Hội trường lớn",
+                        ClubId = clubList[2].Id,
+                        IsActive = true
+                    });
+                }
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

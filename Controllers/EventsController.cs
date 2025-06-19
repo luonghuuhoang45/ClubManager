@@ -26,6 +26,9 @@ namespace ClubManager.Controllers
         {
             var events = await _context.Events
                 .Include(e => e.Club)
+                    .ThenInclude(c => c.Memberships)
+                .Include(e => e.Participants)
+                    .ThenInclude(p => p.Student)
                 .Where(e => e.IsActive)
                 .ToListAsync();
             return View(events);
@@ -39,6 +42,7 @@ namespace ClubManager.Controllers
 
             var ev = await _context.Events
                 .Include(e => e.Club)
+                    .ThenInclude(c => c.Memberships)
                 .Include(e => e.Participants)
                     .ThenInclude(p => p.Student)
                 .FirstOrDefaultAsync(e => e.Id == id);
@@ -151,31 +155,54 @@ namespace ClubManager.Controllers
         {
             if (!User.Identity.IsAuthenticated)
             {
+                TempData["Error"] = "Bạn cần đăng nhập để tham gia sự kiện.";
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
             var userId = _userManager.GetUserId(User);
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null) return RedirectToPage("/Account/Login", new { area = "Identity" });
+            if (user == null)
+            {
+                TempData["Error"] = "Không tìm thấy tài khoản.";
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
 
             // Kiểm tra Student
             var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == userId);
             if (student == null)
             {
-                TempData["Error"] = "Bạn chưa có hồ sơ sinh viên.";
-                return RedirectToAction("Details", new { id = eventId });
+                // Nếu chưa có student, tạo mới
+                student = new Student
+                {
+                    FullName = user.FullName,
+                    Email = user.Email,
+                    UserId = user.Id,
+                    CreatedAt = DateTime.Now
+                };
+                _context.Students.Add(student);
+                await _context.SaveChangesAsync();
             }
 
             // Lấy sự kiện
             var ev = await _context.Events.Include(e => e.Club).FirstOrDefaultAsync(e => e.Id == eventId);
-            if (ev == null) return NotFound();
+            if (ev == null)
+            {
+                TempData["Error"] = "Không tìm thấy sự kiện.";
+                return RedirectToAction("Index");
+            }
 
-            // ❗Kiểm tra Membership với CLB của sự kiện
+            if (ev.Club == null)
+            {
+                TempData["Error"] = "Sự kiện này chưa gắn với CLB hợp lệ.";
+                return RedirectToAction("Details", new { id = eventId });
+            }
+
+            // Kiểm tra Membership với CLB của sự kiện (phải Approved và IsActive)
             var inClub = await _context.Memberships.AnyAsync(m =>
                 m.StudentId == student.Id &&
                 m.ClubId == ev.ClubId &&
                 m.Status == MembershipStatus.Approved &&
-                m.IsActive);
+                m.IsActive == true);
 
             if (!inClub)
             {
@@ -183,22 +210,29 @@ namespace ClubManager.Controllers
                 return RedirectToAction("Details", new { id = eventId });
             }
 
-            // Đã tham gia chưa
-            var alreadyJoined = await _context.EventParticipants.AnyAsync(p =>
-                p.EventId == eventId && p.StudentId == student.Id);
+            // Đã tham gia chưa (chỉ tính active)
+            var activeParticipant = await _context.EventParticipants
+                .FirstOrDefaultAsync(p => p.EventId == eventId && p.StudentId == student.Id && p.IsActive);
 
-            if (!alreadyJoined)
+            if (activeParticipant == null)
             {
-                _context.EventParticipants.Add(new EventParticipant
+                try
                 {
-                    EventId = eventId,
-                    StudentId = student.Id,
-                    JoinDate = DateTime.Now,
-                    IsActive = true
-                });
-
-                await _context.SaveChangesAsync();
-                TempData["Success"] = "Bạn đã tham gia sự kiện.";
+                    var newParticipant = new EventParticipant
+                    {
+                        EventId = eventId,
+                        StudentId = student.Id,
+                        JoinDate = DateTime.Now,
+                        IsActive = true
+                    };
+                    _context.EventParticipants.Add(newParticipant);
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = "Bạn đã tham gia sự kiện.";
+                }
+                catch (Exception ex)
+                {
+                    TempData["Error"] = "Lỗi khi lưu dữ liệu: " + ex.Message;
+                }
             }
             else
             {
@@ -207,5 +241,28 @@ namespace ClubManager.Controllers
 
             return RedirectToAction("Details", new { id = eventId });
         }
+
+        // POST: Events/Leave
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Leave(int participantId)
+        {
+            var participant = await _context.EventParticipants
+                .Include(p => p.Event)
+                .FirstOrDefaultAsync(p => p.Id == participantId);
+
+            if (participant != null)
+            {
+                participant.IsActive = false;
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Bạn đã huỷ tham gia sự kiện.";
+                return RedirectToAction("Details", new { id = participant.EventId });
+            }
+
+            TempData["Error"] = "Không thể huỷ tham gia.";
+            return RedirectToAction("Index");
+        }
     }
 }
+

@@ -192,31 +192,48 @@ namespace ClubManager.Controllers
             var student = await _context.Students.FirstOrDefaultAsync(s => s.UserId == user.Id);
             if (student == null) return NotFound("Không tìm thấy sinh viên");
 
-            // Đã gửi trước đó?
-            var exists = await _context.Memberships
-                .AnyAsync(m => m.StudentId == student.Id && m.ClubId == clubId && m.IsActive);
+            // Lấy membership mới nhất của user với club này (nếu có)
+            var existingMembership = await _context.Memberships
+                .Where(m => m.StudentId == student.Id && m.ClubId == clubId)
+                .OrderByDescending(m => m.Id)
+                .FirstOrDefaultAsync();
 
-            if (exists)
+            if (existingMembership != null)
             {
-                TempData["Info"] = "Bạn đã gửi yêu cầu hoặc là thành viên rồi.";
+                // Nếu đã là thành viên active, không cho apply lại
+                if (existingMembership.Status == MembershipStatus.Approved && existingMembership.IsActive)
+                {
+                    TempData["Info"] = "Bạn đã là thành viên của CLB này.";
+                    return RedirectToAction("Details", new { id = clubId });
+                }
+                // Nếu đã từng apply, chỉ cập nhật trạng thái về Pending
+                existingMembership.Status = MembershipStatus.Pending;
+                existingMembership.IsActive = false;
+                existingMembership.JoinDate = DateTime.Now;
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "Yêu cầu tham gia đã được gửi!";
                 return RedirectToAction("Details", new { id = clubId });
             }
-
-            var membership = new Membership
+            else
             {
-                ClubId = clubId,
-                StudentId = student.Id,
-                ApplicationUserId = user.Id,
-                JoinDate = DateTime.Now,
-                Status = MembershipStatus.Pending,
-                IsActive = true
-            };
+                // Chưa từng xin gia nhập, tạo mới
+                var membership = new Membership
+                {
+                    ClubId = clubId,
+                    StudentId = student.Id,
+                    ApplicationUserId = user.Id,
+                    JoinDate = DateTime.Now,
+                    Status = MembershipStatus.Pending,
+                    IsActive = false
+                };
 
-            _context.Memberships.Add(membership);
-            await _context.SaveChangesAsync();
+                _context.Memberships.Add(membership);
+                await _context.SaveChangesAsync();
 
-            TempData["Success"] = "Yêu cầu tham gia đã được gửi!";
-            return RedirectToAction("Details", new { id = clubId });
+                TempData["Success"] = "Yêu cầu tham gia đã được gửi!";
+                return RedirectToAction("Details", new { id = clubId });
+            }
         }
 
         [Authorize(Roles = "Admin,ClubManager")]
@@ -224,7 +241,7 @@ namespace ClubManager.Controllers
         {
             var requests = await _context.Memberships
                 .Include(m => m.Student)
-                .Where(m => m.ClubId == clubId && m.Status == MembershipStatus.Pending && m.IsActive)
+                .Where(m => m.ClubId == clubId && m.Status == MembershipStatus.Pending && m.IsActive == false)
                 .ToListAsync();
 
             ViewBag.ClubId = clubId;
@@ -238,6 +255,7 @@ namespace ClubManager.Controllers
             if (request == null) return NotFound();
 
             request.Status = MembershipStatus.Approved;
+            request.IsActive = true;
             await _context.SaveChangesAsync();
 
             return RedirectToAction("MembershipRequests", new { clubId = request.ClubId });

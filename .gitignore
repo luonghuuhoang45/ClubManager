@@ -2,3 +2,7 @@
 /obj
 /Migrations
 *.zip
+/bin/Debug
+/bin/Debug/net8.0
+/obj/Debug
+/obj/Debug/net8.0

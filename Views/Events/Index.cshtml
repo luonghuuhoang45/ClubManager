@@ -1,6 +1,13 @@
+@using ClubManager.Models
 @model List<ClubManager.Models.Event>
 @{
     ViewData["Title"] = "Sự kiện";
+    string userId = null;
+    bool isAuthenticated = User.Identity?.IsAuthenticated == true;
+    if (isAuthenticated)
+    {
+        userId = User.FindFirst("sub")?.Value ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+    }
 }
 
 <h2>Sự kiện</h2>
@@ -26,6 +33,19 @@
     <tbody>
         @foreach (var item in Model)
         {
+            var isMember = false;
+            var alreadyJoined = false;
+            if (isAuthenticated && item.Club != null && item.Club.Memberships != null && userId != null)
+            {
+                isMember = item.Club.Memberships.Any(m =>
+                    m.ApplicationUserId == userId &&
+                    m.Status == MembershipStatus.Approved
+                );
+                if (isMember && item.Participants != null)
+                {
+                    alreadyJoined = item.Participants.Any(p => p.Student != null && p.Student.UserId == userId && p.IsActive);
+                }
+            }
             <tr>
                 <td>@item.Title</td>
                 <td>@item.Club?.Name</td>
@@ -38,6 +58,18 @@
                     {
                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Sửa</a>
                         <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger btn-sm">Xoá</a>
+                    }
+                    @if (isMember && !alreadyJoined)
+                    {
+                        <form asp-controller="Events" asp-action="Join" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="eventId" value="@item.Id" />
+                            <button type="submit" class="btn btn-primary btn-sm">Tham gia</button>
+                        </form>
+                    }
+                    else if (isMember && alreadyJoined)
+                    {
+                        <span class="badge bg-success">Đã tham gia</span>
                     }
                 </td>
             </tr>

@@ -1,11 +1,40 @@
+@using ClubManager.Models
 @model ClubManager.Models.Event
 @{
     ViewData["Title"] = "Chi tiết sự kiện";
     var isAdmin = User.IsInRole("Admin");
     var isManager = User.IsInRole("ClubManager");
     var isMember = User.IsInRole("Member");
-}
 
+    var participants = Model.Participants ?? new List<ClubManager.Models.EventParticipant>();
+
+    // Kiểm tra user là thành viên active của CLB tổ chức
+    bool isClubMember = false;
+    string userId = null;
+    if (User.Identity?.IsAuthenticated == true && isMember && Model.Club != null)
+    {
+        userId = User.FindFirst("sub")?.Value ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+        if (userId != null && Model.Club.Memberships != null)
+        {
+            isClubMember = Model.Club.Memberships.Any(m =>
+                m.ApplicationUserId == userId &&
+                m.Status == MembershipStatus.Approved
+            );
+        }
+    }
+
+    bool alreadyJoined = false;
+    int? participantId = null;
+    if (isClubMember && Model.Participants != null && userId != null)
+    {
+        var joined = Model.Participants.FirstOrDefault(p => p.Student != null && p.Student.UserId == userId && p.IsActive);
+        alreadyJoined = joined != null;
+        if (joined != null)
+        {
+            participantId = joined.Id;
+        }
+    }
+}
 <h2>@Model.Title</h2>
 
 <hr />
@@ -17,10 +46,7 @@
 
 <!-- Danh sách người tham gia -->
 <h4>Danh sách người tham gia</h4>
-@{
-    var participants = Model.Participants ?? new List<ClubManager.Models.EventParticipant>();
-}
-@if (participants.Any())
+@if (participants.Any(p => p.IsActive))
 {
     <table class="table table-bordered">
         <thead>
@@ -31,7 +57,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var p in Model.Participants.Where(p => p.IsActive))
+            @foreach (var p in participants.Where(p => p.IsActive))
             {
                 <tr>
                     <td>@p.Student?.FullName</td>
@@ -51,12 +77,20 @@ else
     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Sửa</a>
     <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Xoá</a>
 }
-@if (User.Identity?.IsAuthenticated == true && isMember && Model.Club != null)
+@if (isClubMember && !alreadyJoined)
 {
     <form asp-action="Join" method="post" class="mt-3">
         @Html.AntiForgeryToken()
         <input type="hidden" name="eventId" value="@Model.Id" />
         <button type="submit" class="btn btn-primary">Tham gia sự kiện</button>
+    </form>
+}
+else if (isClubMember && alreadyJoined)
+{
+    <form asp-action="Leave" method="post" class="mt-3">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="participantId" value="@participantId" />
+        <button type="submit" class="btn btn-danger">Huỷ tham gia</button>
     </form>
 }
 <a asp-action="Index" class="btn btn-secondary">Quay lại danh sách</a>

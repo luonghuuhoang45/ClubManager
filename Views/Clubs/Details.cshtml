@@ -33,21 +33,27 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var member in Model.Memberships.Where(m => m.Status == ClubManager.Models.MembershipStatus.Approved && m.IsActive))
+        @foreach (var member in Model.Memberships)
         {
-            <tr>
-                <td>@member.Student?.FullName</td>
-                <td>@member.Student?.Email</td>
-                @if (isAdmin || isManager)
-                {
-                    <td>
-                        <form asp-action="RemoveMember" asp-route-id="@member.Id" method="post"
-                              onsubmit="return confirm('Bạn chắc chắn muốn loại thành viên này khỏi CLB?');">
-                            <button type="submit" class="btn btn-sm btn-danger">Loại</button>
-                        </form>
-                    </td>
-                }
-            </tr>
+            var isCurrentManager = User.IsInRole("ClubManager") && member.ApplicationUserId == User.FindFirst("sub")?.Value;
+            if (member.Status == ClubManager.Models.MembershipStatus.Approved && member.IsActive)
+            {
+                <tr>
+                    <td>@member.Student?.FullName</td>
+                    <td>@member.Student?.Email</td>
+                    @if (isAdmin || isCurrentManager)
+                    {
+                        <td>
+                            <form asp-action="RemoveMember" method="post" class="d-inline"
+                                  onsubmit="return confirm('Bạn chắc chắn muốn loại thành viên này khỏi CLB?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="membershipId" value="@member.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm">Loại khỏi CLB</button>
+                            </form>
+                        </td>
+                    }
+                </tr>
+            }
         }
     </tbody>
 </table>

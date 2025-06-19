@@ -13,6 +13,10 @@
       "PackagePath": "staticwebassets\\favicon.ico"
     },
     {
+      "Id": "D:\\Documents\\Education\\ClubManager\\wwwroot\\inc\\logo.png",
+      "PackagePath": "staticwebassets\\inc\\logo.png"
+    },
+    {
       "Id": "D:\\Documents\\Education\\ClubManager\\wwwroot\\js\\site.js",
       "PackagePath": "staticwebassets\\js\\site.js"
     },

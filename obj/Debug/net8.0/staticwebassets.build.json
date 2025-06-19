@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "v8+QwEDTdXpaimbm6f7VB017M9GlWMUQB7ukkNrS8vg=",
+  "Hash": "tF0PAbJpv5JN+bXIuyELx4C606zOU32m1hkqwLo0FXc=",
   "Source": "ClubManager",
   "BasePath": "_content/ClubManager",
   "Mode": "Default",
@@ -1359,6 +1359,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\favicon.ico"
+    },
+    {
+      "Identity": "D:\\Documents\\Education\\ClubManager\\wwwroot\\inc\\logo.png",
+      "SourceId": "ClubManager",
+      "SourceType": "Discovered",
+      "ContentRoot": "D:\\Documents\\Education\\ClubManager\\wwwroot\\",
+      "BasePath": "_content/ClubManager",
+      "RelativePath": "inc/logo#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "wmhidaxr1l",
+      "Integrity": "OHHED64MOIWZbylVxh9MNHMjOVm7TaMtaudhtWulLCU=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\inc\\logo.png"
     },
     {
       "Identity": "D:\\Documents\\Education\\ClubManager\\wwwroot\\js\\site.js",
@@ -5167,6 +5188,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-hjIBkvmgxQXbNXK3B9YQ3t06RwLuQSQzC/dpvuB/lMk="
+        }
+      ]
+    },
+    {
+      "Route": "inc/logo.png",
+      "AssetFile": "D:\\Documents\\Education\\ClubManager\\wwwroot\\inc\\logo.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "24132"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"OHHED64MOIWZbylVxh9MNHMjOVm7TaMtaudhtWulLCU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 19 Jun 2025 03:55:07 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-OHHED64MOIWZbylVxh9MNHMjOVm7TaMtaudhtWulLCU="
+        }
+      ]
+    },
+    {
+      "Route": "inc/logo.wmhidaxr1l.png",
+      "AssetFile": "D:\\Documents\\Education\\ClubManager\\wwwroot\\inc\\logo.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "24132"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"OHHED64MOIWZbylVxh9MNHMjOVm7TaMtaudhtWulLCU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Thu, 19 Jun 2025 03:55:07 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "wmhidaxr1l"
+        },
+        {
+          "Name": "label",
+          "Value": "inc/logo.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-OHHED64MOIWZbylVxh9MNHMjOVm7TaMtaudhtWulLCU="
         }
       ]
     },

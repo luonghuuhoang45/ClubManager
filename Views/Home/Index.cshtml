@@ -1,100 +1,136 @@
 ﻿@model ClubManager.Models.ViewModels.HomeIndexViewModel
 
-@{
-    ViewData["Title"] = "Trang chủ";
-}
+<h2 class="text-center my-4">Chào mừng đến với hệ thống quản lý CLB!</h2>
 
-<h2 class="text-center mb-4">Chào mừng đến với hệ thống quản lý CLB!</h2>
-
-<!-- Tabs -->
-<ul class="nav nav-tabs mb-4" id="homeTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="clubs-tab" data-bs-toggle="tab" data-bs-target="#clubs" type="button" role="tab">Các CLB</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab">Sự kiện đang mở</button>
-    </li>
-</ul>
-
-<div class="tab-content" id="homeTabsContent">
-
-    <!-- Tab 1: CLB -->
-    <div class="tab-pane fade show active" id="clubs" role="tabpanel">
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            @foreach (var club in Model.Clubs)
-            {
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
+<div class="row">
+    <div class="col-md-9">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-3" id="homeTabs">
+            <li class="nav-item">
+                <a class="nav-link active" href="#clubs" data-bs-toggle="tab">Các CLB</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#events" data-bs-toggle="tab">Sự kiện đang mở</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <!-- Tab 1: CLB -->
+            <div class="tab-pane fade show active" id="clubs">
+                @foreach (var club in Model.Clubs)
+                {
+                    <div class="card mb-3">
                         <div class="card-body">
                             <h5 class="card-title">@club.Club.Name</h5>
                             <p class="card-text">@club.Club.Description</p>
                             <p><strong>Ngày thành lập:</strong> @club.Club.FoundedDate.ToString("dd/MM/yyyy")</p>
-
-                            @if (club.HasJoined)
-                            {
-                                <span class="badge bg-success">Đã tham gia</span>
-                            }
-                            else if (club.HasRequested)
-                            {
-                                <span class="badge bg-warning text-dark">Chờ duyệt</span>
-                            }
-                            else if (User.Identity?.IsAuthenticated ?? false)
+                            <p>
+                                <strong>Thành viên:</strong>
+                                @{
+                                    var approvedMembers = club.Club.Memberships != null
+                                        ? club.Club.Memberships.Count(m => m.Status == MembershipStatus.Approved)
+                                        : 0;
+                                }
+                                @approvedMembers
+                            </p>
+                            @if (!club.HasJoined && !club.HasRequested)
                             {
                                 <form asp-action="JoinClub" method="post">
                                     <input type="hidden" name="clubId" value="@club.Club.Id" />
-                                    <button type="submit" class="btn btn-primary btn-sm">Xin gia nhập</button>
+                                    <button class="btn btn-sm btn-primary">Xin gia nhập</button>
                                 </form>
                             }
-                            else
+                            else if (club.HasRequested)
                             {
-                                <span class="text-muted">Đăng nhập để tham gia</span>
+                                <span class="badge bg-warning text-dark">Đang chờ duyệt</span>
+                            }
+                            else if (club.HasJoined)
+                            {
+                                <span class="badge bg-success">Đã tham gia</span>
                             }
                         </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
+
+            <!-- Tab 2: Sự kiện -->
+            <div class="tab-pane fade" id="events">
+                @foreach (var ev in Model.Events)
+                {
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5>@ev.Title</h5>
+                            <p>@ev.Description</p>
+                            <p><strong>Thời gian:</strong> @ev.StartTime.ToString("dd/MM/yyyy HH:mm") - @ev.EndTime.ToString("HH:mm")</p>
+                            <p><strong>Địa điểm:</strong> @ev.Location</p>
+                            <p><strong>CLB tổ chức:</strong> @ev.Club?.Name</p>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                // Kiểm tra user là thành viên active của CLB tổ chức
+                                var userId = User.FindFirst("sub")?.Value ?? User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+                                var isMember = false;
+                                if (userId != null && ev.Club != null && ev.Club.Memberships != null)
+                                {
+                                    isMember = ev.Club.Memberships.Any(m =>
+                                        m.ApplicationUserId == userId &&
+                                        m.Status == MembershipStatus.Approved
+                                    );
+                                }
+                                if (isMember)
+                                {
+                                    <form asp-controller="Events" asp-action="Join" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="eventId" value="@ev.Id" />
+                                        <button type="submit" class="btn btn-primary btn-sm">Tham gia</button>
+                                    </form>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 
-    <!-- Tab 2: Sự kiện -->
-    <div class="tab-pane fade" id="events" role="tabpanel">
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            @foreach (var ev in Model.Events)
-            {
-                <div class="col">
-                    <div class="card h-100 shadow-sm border-info">
-                        <div class="card-body">
-                            <h5 class="card-title">@ev.Title</h5>
-                            <p class="card-text">@ev.Description</p>
-                            <p><strong>Thời gian:</strong> @ev.StartTime.ToString("dd/MM/yyyy HH:mm")</p>
-                            <p><strong>CLB:</strong> @ev.Club?.Name</p>
-
-                            @if (User.Identity?.IsAuthenticated ?? false)
-                            {
-                                var hasJoinedClub = Model.JoinedClubIds.Contains(ev.ClubId);
-                                if (hasJoinedClub)
-                                {
-                                    <form asp-controller="Events" asp-action="Join" method="post">
-                                        <input type="hidden" name="eventId" value="@ev.Id" />
-                                        <button class="btn btn-success btn-sm">Tham gia sự kiện</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <form asp-action="JoinClub" method="post">
-                                        <input type="hidden" name="clubId" value="@ev.ClubId" />
-                                        <button class="btn btn-outline-primary btn-sm">Xin gia nhập CLB trước</button>
-                                    </form>
-                                }
-                            }
-                            else
-                            {
-                                <span class="text-muted">Đăng nhập để tham gia</span>
-                            }
-                        </div>
-                    </div>
-                </div>
-            }
+    <!-- Sidebar -->
+    <div class="col-md-3">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white text-center">
+                <strong>Dashboard</strong>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Người dùng
+                        <span class="badge bg-primary rounded-pill">@Model.TotalUsers</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Quản lý CLB
+                        <span class="badge bg-info rounded-pill">@Model.TotalManagers</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Số CLB
+                        <span class="badge bg-success rounded-pill">@Model.TotalClubs</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Sự kiện
+                        <span class="badge bg-warning rounded-pill">@Model.TotalEvents</span>
+                    </li>
+                </ul>
+                <h6 class="mt-3 mb-2 text-secondary">Top sinh viên tham gia nhiều CLB</h6>
+                <ol class="ps-3 mb-0">
+                    @foreach (var student in Model.TopStudents)
+                    {
+                        var clubCount = student.Memberships.Count(m => m.Status == MembershipStatus.Approved);
+                        if (clubCount > 0)
+                        {
+                            <li>
+                                @student.FullName
+                                <span class="text-muted">(@clubCount CLB)</span>
+                            </li>
+                        }
+                    }
+                </ol>
+            </div>
         </div>
     </div>
 </div>
