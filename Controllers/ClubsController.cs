@@ -24,23 +24,9 @@ namespace ClubManager.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
 
-            if (User.IsInRole("Admin"))
+            if (User.IsInRole("Admin") || User.IsInRole("ClubManager"))
             {
                 var clubs = await _context.Clubs.ToListAsync();
-                return View(clubs);
-            }
-
-            if (User.IsInRole("ClubManager"))
-            {
-                var clubIds = await _context.Memberships
-                    .Where(m => m.ApplicationUserId == user.Id)
-                    .Select(m => m.ClubId)
-                    .ToListAsync();
-
-                var clubs = await _context.Clubs
-                    .Where(c => clubIds.Contains(c.Id))
-                    .ToListAsync();
-
                 return View(clubs);
             }
 
@@ -63,14 +49,14 @@ namespace ClubManager.Controllers
         }
 
         // GET: Clubs/Create
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ClubManager")]
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Clubs/Create
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ClubManager")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Description,FoundedDate")] Club club)
@@ -102,21 +88,8 @@ namespace ClubManager.Controllers
             var club = await _context.Clubs.FindAsync(id);
             if (club == null) return NotFound();
 
-            var user = await _userManager.GetUserAsync(User);
-
-            if (User.IsInRole("Admin"))
-                return View(club);
-
-            if (User.IsInRole("ClubManager"))
-            {
-                var isManager = await _context.Memberships
-                    .AnyAsync(m => m.ClubId == club.Id && m.ApplicationUserId == user.Id);
-
-                if (isManager)
-                    return View(club);
-            }
-
-            return Forbid();
+            // ClubManager có quyền sửa mọi CLB
+            return View(club);
         }
 
         // POST: Clubs/Edit/5
@@ -147,7 +120,7 @@ namespace ClubManager.Controllers
         }
 
         // GET: Clubs/Delete/5
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ClubManager")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -159,7 +132,7 @@ namespace ClubManager.Controllers
         }
 
         // POST: Clubs/Delete/5
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,ClubManager")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -307,3 +280,4 @@ namespace ClubManager.Controllers
         }
     }
 }
+
